@@ -245,15 +245,26 @@
     <h3>Demo</h3>
     <h2>System in action</h2>
     <p>The video below shows WordleBot playing a full game &mdash; from the initial camera scan through word selection, block manipulation, and Wordle feedback processing.</p>
-    <div class="video-wrap">
-      <!--
-        Option A - local file:  <video controls><source src="static/videos/demo.mp4" type="video/mp4"></video>
-        Option B - YouTube:     <iframe src="https://www.youtube.com/embed/YOUR_ID" allowfullscreen></iframe>
-      -->
-      <div class="video-ph">
-        <div class="play-ico"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-        <p>&#127901; Add your demo video here</p>
-        <p style="opacity:.6">Replace with a video tag or YouTube iframe</p>
+    <div class="fig-row" style="margin-top:1.5rem">
+      <div>
+        <div class="video-wrap">
+          <video controls playsinline>
+            <source src="static/videos/demo_1.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <p style="font-family:var(--serif);font-style:italic;font-size:.88rem;color:var(--muted);margin-top:.5rem">
+          Video 1 &mdash; [Add description: e.g. CNN letter detection live demo]
+        </p>
+      </div>
+      <div>
+        <div class="video-wrap">
+          <video controls playsinline>
+            <source src="static/videos/demo_2.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <p style="font-family:var(--serif);font-style:italic;font-size:.88rem;color:var(--muted);margin-top:.5rem">
+          Video 2 &mdash; [Add description: e.g. Full system end-to-end demo]
+        </p>
       </div>
     </div>
   </div>
@@ -278,14 +289,16 @@
         </ul>
       </div>
       <div class="arch-card c">
-        <div class="ss-tag">SS3 &middot; Elijah Spannerberg &middot; Orchestration &amp; GUI</div>
-        <h4>Behaviour Tree &amp; GUI</h4>
+        <div class="ss-tag">SS3 &middot; Elijah Spannerberg &middot; GUI &amp; Orchestration</div>
+        <h4>Qt5 GUI &amp; Mission Coordinator</h4>
         <ul>
-          <li>Publishes /mission/state (SCANNING / IDLE)</li>
-          <li>Subscribes to /perception/human_detected</li>
-          <li>Safety stop on human workspace intrusion</li>
-          <li>Coordinates scan to solve to place loop</li>
-          <li>Diagnostics GUI &mdash; live letter-hunt display</li>
+          <li>Qt5 C++ GUI: RViz sim, HL digital twin, camera, Wordle board, diagnostics</li>
+          <li>Embedded Wordle board (HTML/JS via QWebEngineView)</li>
+          <li>Voice control: speech recognition + MFCC voiceprint verification</li>
+          <li>Mission coordinator: behaviour-tree-style C++ node (500 ms tick)</li>
+          <li>10 mission states: IDLE &rarr; SCANNING &rarr; READY_TO_MOVE &rarr; MOVING &rarr; STOPPED etc.</li>
+          <li>Safety guard runs every tick &mdash; highest priority branch</li>
+          <li>Perception timeout &amp; scan retry recovery built in</li>
         </ul>
       </div>
       <div class="arch-card r">
@@ -303,23 +316,34 @@
         <div class="ss-tag">SS4 &middot; James Farrell &middot; Game Logic</div>
         <h4>Gamification &amp; Word Solver</h4>
         <ul>
-          <li>5-letter dictionary with candidate filtering</li>
-          <li>Entropy-based best-guess selection</li>
-          <li>Mode A (AI plays) / Mode B (human plays)</li>
-          <li>Letter-hunt confirmation before dispatch</li>
-          <li>Publishes /hl_control/word_request</li>
+          <li>14,855-word dictionary; frequency-ranked weighted opener selection</li>
+          <li>Mode A (robot guesses + G/B/I feedback) / Mode B (human guesses)</li>
+          <li>Pre-motion confirmation: verifies all required letters visible (30 s timeout)</li>
+          <li>Post-motion confirmation: verifies placed letters after robot moves</li>
+          <li>Sticky FOUND accumulation &mdash; letters persist across frames within a phase</li>
+          <li>Easter-egg insult responses for trivially easy guesses</li>
+          <li>Undo service; latched /hl_control/word_request so SS2 never misses it</li>
         </ul>
       </div>
     </div>
     <h3 style="margin-top:2.5rem">Key ROS 2 topics</h3>
     <table class="tt">
-      <thead><tr><th>Topic</th><th>Type</th><th>Publisher</th><th>Description</th></tr></thead>
+      <thead><tr><th>Topic</th><th>Type</th><th>Publisher</th><th>Subscribers</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td class="tn">/perception/detections</td><td>String (JSON)</td><td>SS1</td><td>Per-frame letter detections with camera-frame 3D positions</td></tr>
-        <tr><td class="tn">/perception/gameboard_state</td><td>GameboardState (latched)</td><td>SS1</td><td>World-frame poses for all detected blocks, published once per scan</td></tr>
-        <tr><td class="tn">/mission/state</td><td>String</td><td>SS3</td><td>SCANNING / IDLE &mdash; controls perception scan window</td></tr>
-        <tr><td class="tn">/hl_control/word_request</td><td>String (latched)</td><td>SS4</td><td>5-letter guess word; triggers pick-and-place planning in SS2</td></tr>
-        <tr><td class="tn">/perception/human_detected</td><td>Bool</td><td>SS1</td><td>Safety signal &mdash; robot stops if a human enters the workspace</td></tr>
+        <tr><td class="tn">/perception/detections</td><td>String (JSON)</td><td>SS1</td><td>SS4, SS3</td><td>Per-frame letter detections with camera-frame 3D positions, confidence, rotation</td></tr>
+        <tr><td class="tn">/perception/gameboard_state</td><td>GameboardState (latched)</td><td>SS1</td><td>SS2, SS3</td><td>World-frame poses for all detected blocks &mdash; published once per completed scan</td></tr>
+        <tr><td class="tn">/perception/human_detected</td><td>Bool ~5 Hz</td><td>SS1</td><td>SS3</td><td>Safety signal &mdash; triggers SAFETY_STOPPED state and robot stop</td></tr>
+        <tr><td class="tn">/perception/image_annotated</td><td>sensor_msgs/Image</td><td>SS1</td><td>SS3 GUI</td><td>Annotated camera frame with detection overlays for CV view in GUI</td></tr>
+        <tr><td class="tn">/mission/state</td><td>String (latched)</td><td>SS3</td><td>SS1, SS4</td><td>SCANNING / IDLE &mdash; controls perception scan window and game lifecycle</td></tr>
+        <tr><td class="tn">/wordle_bot/mission_state</td><td>String (latched)</td><td>SS3</td><td>SS3 GUI</td><td>10-state coordinator FSM: IDLE, SCANNING, READY_TO_MOVE, MOVING, STOPPED &hellip;</td></tr>
+        <tr><td class="tn">/wordle_bot/mission_progress</td><td>String JSON (latched)</td><td>SS3</td><td>SS3 GUI</td><td>7-step mission plan with per-step status for diagnostics panel</td></tr>
+        <tr><td class="tn">/wordle_bot/start_mission</td><td>Bool</td><td>SS3</td><td>SS2</td><td>Pulse signal (5&times;) to start robot motion execution</td></tr>
+        <tr><td class="tn">/wordle_bot/stop_mission</td><td>Bool</td><td>SS3</td><td>SS2</td><td>Emergency stop &mdash; published by safety guard on human detection</td></tr>
+        <tr><td class="tn">/gamification/guess</td><td>String</td><td>SS4</td><td>SS3 GUI</td><td>Current 5-letter word guess &mdash; GUI previews it on the Wordle board</td></tr>
+        <tr><td class="tn">/gamification/mission_state</td><td>String JSON</td><td>SS4</td><td>SS2</td><td>Ordered letter placement sequence with 3D pick positions for each letter</td></tr>
+        <tr><td class="tn">/gamification/confirmation_status</td><td>String JSON</td><td>SS4</td><td>SS3</td><td>CONFIRMED or CONFIRMATION_FAILURE for pre/post-motion letter verification</td></tr>
+        <tr><td class="tn">/hl_control/word_request</td><td>String (latched)</td><td>SS4</td><td>SS2</td><td>Confirmed 5-letter word &mdash; arms SS2 pick-and-place pipeline automatically</td></tr>
+        <tr><td class="tn">/diagnostics</td><td>String JSON</td><td>SS4</td><td>SS3 GUI</td><td>Full game state: status, attempt, candidates left, found/looking-for letters</td></tr>
       </tbody>
     </table>
   </div>
@@ -351,6 +375,34 @@
   </div>
 </section>
 
+<section id="gui-results">
+  <div class="container">
+    <div class="tl c">&#128187; SS3 &middot; GUI &amp; Orchestration Track</div>
+    <h2>GUI &amp; Mission Coordinator</h2>
+    <p>
+      Elijah's SS3 subsystem is a Qt5 C++ application combining a full operator GUI
+      with an embedded ROS 2 mission coordinator. The GUI provides four views
+      (RViz simulation, HL digital twin, camera, diagnostics), an embedded Wordle board
+      rendered via QWebEngineView, voice control with speaker verification, and safety
+      controls. The mission coordinator runs as a separate C++ node ticking at 500 ms
+      with a behaviour-tree-style priority structure: safety guard &rarr; failure detection
+      &rarr; recovery &rarr; command &rarr; motion &rarr; scan.
+    </p>
+    <div class="fig-row">
+      <div class="fig-wrap">
+        <!-- <img src="static/images/gui_main.png" alt="GUI main window" /> -->
+        <div class="fig-ph"><div class="fig-ico">&#128187;</div><p>gui_main.png</p><p style="opacity:.6">Replace with a screenshot of the GUI main window</p></div>
+        <div class="fig-cap">Fig. 5 &mdash; SS3 Qt5 operator GUI showing RViz sim view, Wordle board, voice controls, and safety panel.</div>
+      </div>
+      <div class="fig-wrap">
+        <!-- <img src="static/images/gui_wordle.png" alt="GUI Wordle board" /> -->
+        <div class="fig-ph"><div class="fig-ico">&#129354;</div><p>gui_wordle.png</p><p style="opacity:.6">Replace with a screenshot of the embedded Wordle board</p></div>
+        <div class="fig-cap">Fig. 6 &mdash; Embedded Wordle board (HTML/JS via QWebEngineView) showing Mode A game in progress with G/B/I feedback tiles.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="rl-results">
   <div class="container">
     <div class="tl r">&#129470; RL &amp; Path Planning Track</div>
@@ -360,18 +412,18 @@
       <div class="fig-wrap">
         <!-- <img src="static/images/reward_curve.png" alt="Reward convergence" /> -->
         <div class="fig-ph"><div class="fig-ico">&#128200;</div><p>reward_curve.png</p><p style="opacity:.6">Replace with your PPO reward convergence plot</p></div>
-        <div class="fig-cap">Fig. 4 &mdash; PPO training reward convergence over episodes.</div>
+        <div class="fig-cap">Fig. 7 &mdash; PPO training reward convergence over episodes.</div>
       </div>
       <div class="fig-wrap">
         <!-- <img src="static/images/trajectory.png" alt="Trajectory visualisation" /> -->
         <div class="fig-ph"><div class="fig-ico">&#128208;</div><p>trajectory.png</p><p style="opacity:.6">Replace with a trajectory visualisation or sim screenshot</p></div>
-        <div class="fig-cap">Fig. 5 &mdash; Example planned pick-and-place trajectory in simulation.</div>
+        <div class="fig-cap">Fig. 8 &mdash; Example planned pick-and-place trajectory in simulation.</div>
       </div>
     </div>
     <div class="fig-wrap">
       <!-- <img src="static/images/robot_execution.png" alt="Robot execution" /> -->
       <div class="fig-ph"><div class="fig-ico">&#129470;</div><p>robot_execution.png</p><p style="opacity:.6">Replace with a photo of the UR3e executing pick-and-place</p></div>
-      <div class="fig-cap">Fig. 6 &mdash; UR3e executing a trained pick-and-place policy on the physical robot.</div>
+      <div class="fig-cap">Fig. 9 &mdash; UR3e executing a trained pick-and-place policy on the physical robot.</div>
     </div>
   </div>
 </section>
