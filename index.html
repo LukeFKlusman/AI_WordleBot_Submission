@@ -119,6 +119,10 @@
     /* footer */
     footer{padding:2rem 0 3rem;text-align:center;font-size:.8rem;color:var(--muted)}
     footer a{color:var(--muted);text-decoration:underline}
+
+    .luke-card { padding-bottom: 1.25rem; }
+    .luke-photo-wrap { width: 100%; height: 160px; overflow: hidden; border-radius: .4rem; margin-bottom: 0; }
+    .luke-photo { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; display: block; }
     @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
     .fi{animation:fadeUp .55s ease both}
     .d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
@@ -199,9 +203,11 @@
     <h3>Team</h3>
     <h2>Group members &amp; focus areas</h2>
     <div class="team-grid">
-      <div class="team-card cc">
-        <img class="team-photo" src="static/images/luke.jpg" alt="Luke Klusman" />
-        <div class="team-role">Perception &amp; CNN</div>
+      <div class="team-card cc luke-card">
+        <div class="luke-photo-wrap">
+          <img class="luke-photo" src="static/images/luke.jpg" alt="Luke Klusman" />
+        </div>
+        <div class="team-role" style="margin-top:.75rem">Perception &amp; CNN</div>
         <div class="team-name">Luke Klusman</div>
         <div class="tags"><span class="tag">SS1</span><span class="tag">RealSense</span><span class="tag">CNN</span><span class="tag">TF2</span></div>
         <div class="team-desc">RealSense D435i integration, LetterCNN design &amp; training, depth-to-world-frame projection, dot-based block orientation, hand-eye calibration.</div>
@@ -326,20 +332,21 @@
     <p>The LetterCNN was trained on 36 classes (A-Z, 0-9) collected using a custom data collection pipeline. The preprocessing chain &mdash; grayscale conversion, 64x64 resize, histogram equalisation &mdash; is matched exactly between training and inference to avoid distribution shift. Temporal majority-vote smoothing over 15 frames suppresses single-frame misclassifications in the live detection stream.</p>
     <div class="fig-row">
       <div class="fig-wrap">
-        <!-- <img src="static/images/confusion_matrix.png" alt="Confusion matrix" /> -->
-        <div class="fig-ph"><div class="fig-ico">&#128202;</div><p>confusion_matrix.png</p><p style="opacity:.6">Replace with your confusion matrix</p></div>
-        <div class="fig-cap">Fig. 1 &mdash; Confusion matrix of LetterCNN on held-out test set (36 classes).</div>
+        <img src="static/images/confusion_matrix.png" alt="Confusion matrix — Epoch 10, 100% validation accuracy" />
+        <div class="fig-cap">Fig. 1 &mdash; Confusion matrix at epoch 10 (val acc: 100%). All 36 classes classified correctly on the held-out test set with near-perfect diagonal alignment.</div>
       </div>
       <div class="fig-wrap">
-        <!-- <img src="static/images/training_loss.png" alt="Training loss" /> -->
-        <div class="fig-ph"><div class="fig-ico">&#128200;</div><p>training_loss.png</p><p style="opacity:.6">Replace with your training/validation loss curve</p></div>
-        <div class="fig-cap">Fig. 2 &mdash; Training and validation loss. Dropout (p=0.4) reduces overfitting across 36 classes.</div>
+        <img src="static/images/training_curves.png" alt="Training loss and validation accuracy curves" />
+        <div class="fig-cap">Fig. 2 &mdash; Training loss (left) and validation accuracy % (right) over 10 epochs. Loss converges from ~3.0 to ~1.75; accuracy reaches 100% by epoch 4.</div>
       </div>
     </div>
     <div class="fig-wrap">
-      <!-- <img src="static/images/live_detection.png" alt="Live detection" /> -->
-      <div class="fig-ph"><div class="fig-ico">&#129470;</div><p>live_detection.png</p><p style="opacity:.6">Replace with a screenshot of the annotated perception window</p></div>
-      <div class="fig-cap">Fig. 3 &mdash; Live annotated view. Each card shows letter, confidence %, depth in metres, rotation angle, and orientation source [dot] or [rect].</div>
+      <img src="static/images/live_detection.png" alt="Live detection of four letter cards with depth visualisation" />
+      <div class="fig-cap">Fig. 3 &mdash; Live annotated detection of four letter cards (K, K, W, V). Each label shows the detected letter, confidence %, depth in metres, and rotation angle. The lower panel shows the aligned depth map with the 10&ndash;30 cm depth gate applied.</div>
+    </div>
+    <div class="fig-wrap">
+      <img src="static/images/dot_rotation.png" alt="Dot-based rotation detection suppressing upside-down classification" />
+      <div class="fig-cap">Fig. 4 &mdash; Dot-based orientation detection in action. The corner dot (green circle) is detected at 178&deg;, correctly identifying the card as upside-down. The system suppresses the letter classification rather than misreading the rotated R &mdash; a key advantage over bounding-box-only orientation estimation.</div>
     </div>
   </div>
 </section>
