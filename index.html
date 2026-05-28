@@ -133,7 +133,7 @@
 <header>
   <div class="container">
     <div class="badge fi">41118 &middot; AI in Robotics &middot; UTS 2025</div>
-    <h1 class="fi d1">WordleBot RS2</h1>
+    <h1 class="fi d1">WordleBot</h1>
     <p class="subtitle fi d2">A UR3e robotic system that autonomously plays Wordle</p>
     <div class="tracks fi d2">
       <div class="track-pill tc">&#128269; Perception &amp; CNN <span>Luke &middot; Elijah</span></div>
@@ -193,7 +193,7 @@
   <div class="container">
     <h3>Abstract</h3>
     <h2>WordleBot &mdash; autonomous robotic Wordle</h2>
-    <p>WordleBot RS2 is a fully autonomous robotic system that plays the word game Wordle. An Intel RealSense D435i depth camera scans a workspace of lettered blocks. A custom convolutional neural network classifies each letter in real time, and TF2 transforms project block positions from camera frame into the robot world frame. A word-solver selects an optimal 5-letter guess, and a reinforcement-learning trained UR3e arm executes pick-and-place to physically spell the word on the board &mdash; all without human intervention.</p>
+    <p>WordleBotis a fully autonomous robotic system that plays the word game Wordle. An Intel RealSense D435i depth camera scans a workspace of lettered blocks. A custom convolutional neural network classifies each letter in real time, and TF2 transforms project block positions from camera frame into the robot world frame. A word-solver selects an optimal 5-letter guess, and a reinforcement-learning trained UR3e arm executes pick-and-place to physically spell the word on the board &mdash; all without human intervention.</p>
     <p>The project spans two tightly integrated tracks: a <strong>Perception &amp; CNN track</strong> (Luke Klusman &amp; Elijah Spannerberg) responsible for visual letter detection, 3D localisation, GUI feedback, and game logic; and an <strong>RL &amp; Path Planning track</strong> (Connor Lindsell &amp; James Farrell) responsible for training a PPO policy in simulation and deploying it on the physical robot for block manipulation.</p>
   </div>
 </section>
@@ -461,7 +461,7 @@ python3 realsense_camera_cnn.py
 
 <footer>
   <div class="container">
-    <p>WordleBot RS2 &middot; 41118 AI in Robotics &middot; University of Technology Sydney &middot; 2025</p>
+    <p>WordleBot &middot; 41118 AI in Robotics &middot; University of Technology Sydney &middot; 2025</p>
     <p style="margin-top:.5rem">Website adapted from <a href="https://github.com/nerfies/nerfies.github.io" target="_blank" rel="noopener">Nerfies</a> (CC BY-SA 4.0).</p>
   </div>
 </footer>
