@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="WordleBot RS2 — A UR3e robotic system that autonomously plays the word game Wordle using computer vision, CNN letter detection, and pick-and-place manipulation." />
+  <title>WordleBot RS2 · 41118 Portfolio</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── CSS Variables ── */
+    :root {
+      --bg:           #fafaf8;
+      --surface:      #ffffff;
+      --border:       #e4e0d8;
+      --text:         #1a1916;
+      --muted:        #6b6760;
+      --accent:       #1a6b4a;
+      --accent-light: #e6f4ee;
+      --accent-mid:   #2a9966;
+      --warn:         #c0392b;
+      --code-bg:      #f4f3f0;
+      --shadow:       0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.05);
+      --font-serif:   'Crimson Pro', Georgia, serif;
+      --font-sans:    'DM Sans', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+      --max-w:        860px;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 18px; scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    img { max-width: 100%; height: auto; display: block; }
+
+    /* ── Layout ── */
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ── Header / Hero ── */
+    header {
+      padding: 4rem 0 2.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-light);
+      border: 1px solid var(--accent-mid);
+      padding: .25rem .75rem;
+      border-radius: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: 2.9rem;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -.01em;
+      margin-bottom: 0.4rem;
+    }
+    .subtitle {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 1.2rem;
+      color: var(--muted);
+      margin-bottom: 1.8rem;
+    }
+    .authors {
+      font-size: .92rem;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+    .authors a { color: var(--text); font-weight: 500; }
+    .authors a:hover { color: var(--accent); text-decoration: none; }
+    .affiliation {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    /* ── Nav links ── */
+    .nav-links {
+      display: flex;
+      justify-content: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-bottom: 0;
+    }
+    .nav-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      padding: .4rem 1rem;
+      border-radius: .4rem;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .nav-links a:hover {
+      text-decoration: none;
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+    .nav-links svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+
+    /* ── Teaser banner ── */
+    .teaser {
+      margin: 3rem 0 1.5rem;
+    }
+    .teaser-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: .75rem;
+      padding: 2.5rem 2rem;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .pipeline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      row-gap: 1rem;
+    }
+    .pipe-node {
+      text-align: center;
+      width: 130px;
+    }
+    .pipe-icon {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto .5rem;
+      font-size: 1.5rem;
+    }
+    .pipe-label {
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .2rem;
+    }
+    .pipe-title {
+      font-weight: 500;
+      font-size: .82rem;
+      color: var(--text);
+    }
+    .pipe-arrow {
+      color: var(--border);
+      font-size: 1.4rem;
+      margin: 0 .25rem;
+      flex-shrink: 0;
+    }
+    .pi-camera { background: #eef6ff; }
+    .pi-cnn    { background: #fff3e6; }
+    .pi-game   { background: #f0f9f4; }
+    .pi-plan   { background: #fef0f6; }
+    .pi-robot  { background: #f5f0fe; }
+
+    .teaser-caption {
+      text-align: center;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: .9rem;
+      color: var(--muted);
+      margin-top: 1rem;
+    }
+
+    /* ── Sections ── */
+    section {
+      padding: 3.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    section:last-of-type { border-bottom: none; }
+    h2 {
+      font-family: var(--font-serif);
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+    }
+    h3 {
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+    p { margin-bottom: 1rem; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ── Team grid ── */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .team-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: .6rem;
+      padding: 1.25rem 1rem;
+      text-align: center;
+      transition: box-shadow .15s, transform .15s;
+    }
+    .team-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
+    .team-avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      color: var(--accent);
+      margin: 0 auto .75rem;
+      border: 2px solid var(--accent-mid);
+      font-weight: 600;
+    }
+    .team-name {
+      font-weight: 600;
+      font-size: .9rem;
+      margin-bottom: .2rem;
+    }
+    .team-role {
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: .4rem;
+    }
+    .team-desc {
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Video placeholder ── */
+    .video-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: .6rem;
+      overflow: hidden;
+      margin-top: 1.5rem;
+    }
+    .video-wrap video,
+    .video-wrap iframe {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16/9;
+      border: none;
+    }
+    .video-placeholder {
+      aspect-ratio: 16/9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .75rem;
+      background: #f0ede8;
+      color: var(--muted);
+    }
+    .video-placeholder .play-icon {
+      width: 56px; height: 56px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .video-placeholder .play-icon svg {
+      width: 22px; height: 22px;
+      fill: white;
+      margin-left: 3px;
+    }
+    .video-placeholder p {
+      font-size: .88rem;
+      margin: 0;
+      text-align: center;
+    }
+
+    /* ── System architecture ── */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 600px) { .arch-grid { grid-template-columns: 1fr; } }
+    .arch-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: .6rem;
+      padding: 1.25rem;
+    }
+    .arch-card .ss-tag {
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--accent);
+      margin-bottom: .4rem;
+    }
+    .arch-card h4 {
+      font-weight: 600;
+      font-size: .92rem;
+      margin-bottom: .5rem;
+    }
+    .arch-card ul {
+      list-style: none;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+    .arch-card ul li::before { content: "→ "; color: var(--accent-mid); }
+    .arch-card ul li { margin-bottom: .2rem; }
+
+    /* ── Results figure ── */
+    .figure-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: .6rem;
+      overflow: hidden;
+      margin-top: 1.5rem;
+    }
+    .figure-placeholder {
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .75rem;
+      background: var(--code-bg);
+      color: var(--muted);
+      padding: 2rem;
+    }
+    .figure-placeholder .fig-icon {
+      font-size: 2.5rem;
+      opacity: .4;
+    }
+    .figure-placeholder p {
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      letter-spacing: .04em;
+      margin: 0;
+      text-align: center;
+    }
+    .figure-caption {
+      padding: .75rem 1.25rem;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: .88rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Figure row ── */
+    .figure-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    @media (max-width: 600px) { .figure-row { grid-template-columns: 1fr; } }
+
+    /* ── Topics / ROS2 interface ── */
+    .topics-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+      margin-top: 1.25rem;
+    }
+    .topics-table th {
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      padding: .4rem .75rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .topics-table td {
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .topics-table tr:last-child td { border-bottom: none; }
+    .topics-table .topic-name {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--accent);
+    }
+
+    /* ── Code block ── */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: .4rem;
+      padding: 1.25rem 1.5rem;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    /* ── Warning / callout ── */
+    .callout {
+      background: #fff8e6;
+      border-left: 3px solid #e6a817;
+      border-radius: 0 .4rem .4rem 0;
+      padding: .9rem 1.25rem;
+      font-size: .88rem;
+      color: #5a4500;
+      margin: 1.25rem 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 2rem 0 3rem;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); text-decoration: underline; }
+
+    /* ── Scroll fade-in ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeUp .55s ease both; }
+    .delay-1 { animation-delay: .1s; }
+    .delay-2 { animation-delay: .2s; }
+    .delay-3 { animation-delay: .3s; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      h1 { font-size: 2.1rem; }
+      .pipeline { gap: .5rem; }
+      .pipe-node { width: 90px; }
+      .pipe-arrow { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ HEADER ═══════════════════════════════════ -->
+<header>
+  <div class="container">
+    <div class="badge fade-in">41118 · AI in Robotics · UTS 2025</div>
+    <h1 class="fade-in delay-1">WordleBot RS2</h1>
+    <p class="subtitle fade-in delay-2">A UR3e robotic system that autonomously plays Wordle</p>
+
+    <p class="authors fade-in delay-2">
+      <a href="#">Luke Klusman</a><sup>1</sup>&ensp;·&ensp;
+      <a href="#">[Connor — SS2]</a><sup>1</sup>&ensp;·&ensp;
+      <a href="#">[Elijah — SS3]</a><sup>1</sup>&ensp;·&ensp;
+      <a href="#">[Kermit — SS4]</a><sup>1</sup>
+    </p>
+    <p class="affiliation fade-in delay-2"><sup>1</sup>University of Technology Sydney · FEIT / MME</p>
+
+    <div class="nav-links fade-in delay-3">
+      <a href="#video">
+        <!-- play icon -->
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        Video
+      </a>
+      <a href="https://github.com/YOUR_ORG/YOUR_REPO" target="_blank" rel="noopener">
+        <!-- github icon -->
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.337 4.687-4.565 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.744 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+        Code
+      </a>
+      <a href="#architecture">
+        <!-- diagram icon -->
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        Architecture
+      </a>
+      <a href="#results">
+        <!-- chart icon -->
+        <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>
+        Results
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════ TEASER ═══════════════════════════════════ -->
+<div class="container">
+  <div class="teaser">
+    <div class="teaser-diagram fade-in">
+      <div class="pipeline">
+        <div class="pipe-node">
+          <div class="pipe-icon pi-camera">📷</div>
+          <div class="pipe-label">SS1 · Luke</div>
+          <div class="pipe-title">Perception</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="pipe-icon pi-cnn">🔡</div>
+          <div class="pipe-label">SS1 · Luke</div>
+          <div class="pipe-title">CNN Detection</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="pipe-icon pi-game">🟩</div>
+          <div class="pipe-label">SS4 · Kermit</div>
+          <div class="pipe-title">Word Solver</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="pipe-icon pi-plan">🧠</div>
+          <div class="pipe-label">SS3 · Elijah</div>
+          <div class="pipe-title">Behaviour Tree</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-node">
+          <div class="pipe-icon pi-robot">🦾</div>
+          <div class="pipe-label">SS2 · Connor</div>
+          <div class="pipe-title">Pick & Place</div>
+        </div>
+      </div>
+    </div>
+    <p class="teaser-caption">
+      End-to-end pipeline: the RealSense D435i camera detects letter blocks using a trained CNN,
+      the word solver selects an optimal Wordle guess, and the UR3e executes pick-and-place to spell the word.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ ABSTRACT ═════════════════════════════════ -->
+<section id="abstract">
+  <div class="container">
+    <h3>Abstract</h3>
+    <h2>WordleBot — autonomous robotic Wordle</h2>
+    <p>
+      WordleBot RS2 is a fully autonomous robotic system that plays the word game Wordle.
+      An Intel RealSense D435i depth camera, mounted on a UR3e collaborative robot arm,
+      scans a workspace of lettered blocks. A custom CNN classifies each letter in real time,
+      and TF2 transforms project their positions from camera frame into the robot's world frame.
+      A behaviour-tree orchestrates the game loop: the word-solver subsystem selects an optimal
+      5-letter guess, the high-level controller plans a pick-and-place trajectory for each letter,
+      and the robot spells the word on the board. Wordle feedback is received, the candidate word
+      list is pruned, and the loop repeats — all without human intervention.
+    </p>
+    <p>
+      The project is implemented entirely in ROS 2 (Humble) with Python, spanning four
+      tightly-integrated subsystems: perception &amp; mapping (SS1), pick-and-place control (SS2),
+      behaviour-tree orchestration (SS3), and game logic &amp; gamification (SS4).
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ TEAM ════════════════════════════════════ -->
+<section id="team">
+  <div class="container">
+    <h3>Team</h3>
+    <h2>Group members &amp; subsystem focus</h2>
+
+    <div class="team-grid">
+
+      <div class="team-card">
+        <div class="team-avatar">LK</div>
+        <div class="team-role">SS1 · Perception</div>
+        <div class="team-name">Luke Klusman</div>
+        <div class="team-desc">
+          RealSense D435i integration, CNN letter detection,
+          depth-to-world-frame projection, hand-eye calibration,
+          dot-based block orientation.
+        </div>
+      </div>
+
+      <div class="team-card">
+        <div class="team-avatar">C</div>
+        <div class="team-role">SS2 · Pick &amp; Place</div>
+        <div class="team-name">[Connor — add surname]</div>
+        <div class="team-desc">
+          HL control node, UR3e motion planning, gameboard_state
+          consumption, pick-and-place trajectory execution.
+        </div>
+      </div>
+
+      <div class="team-card">
+        <div class="team-avatar">E</div>
+        <div class="team-role">SS3 · Orchestration</div>
+        <div class="team-name">[Elijah — add surname]</div>
+        <div class="team-desc">
+          ROS 2 behaviour tree, mission state management,
+          human-detection safety monitor, scan trigger logic.
+        </div>
+      </div>
+
+      <div class="team-card">
+        <div class="team-avatar">K</div>
+        <div class="team-role">SS4 · Game Logic</div>
+        <div class="team-name">[Kermit — add surname]</div>
+        <div class="team-desc">
+          Wordle solver algorithm, candidate filtering,
+          gamification node, letter-hunt confirmation flow.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ VIDEO ════════════════════════════════════ -->
+<section id="video">
+  <div class="container">
+    <h3>Demo</h3>
+    <h2>System in action</h2>
+    <p>
+      The video below shows WordleBot playing a full game — from the initial camera scan
+      through word selection, block manipulation, and Wordle feedback processing.
+    </p>
+
+    <div class="video-wrap">
+      <!--
+        OPTION A — local video file:
+          <video controls>
+            <source src="static/videos/wordlebot_demo.mp4" type="video/mp4" />
+          </video>
+
+        OPTION B — YouTube embed:
+          <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe>
+
+        Replace the placeholder below with one of the above once you have the video.
+      -->
+      <div class="video-placeholder">
+        <div class="play-icon">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <p>📽 Add your demo video here</p>
+        <p style="opacity:.6">Replace this block with a &lt;video&gt; tag or YouTube &lt;iframe&gt;</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ ARCHITECTURE ═════════════════════════════ -->
+<section id="architecture">
+  <div class="container">
+    <h3>System design</h3>
+    <h2>ROS 2 subsystem architecture</h2>
+    <p>
+      All four subsystems communicate via ROS 2 topics and services. SS1 publishes detections
+      every frame while scanning; the completed gameboard is latched once and consumed by SS2.
+      The behaviour tree (SS3) coordinates transitions, ensuring the robot never moves while
+      the camera is reading.
+    </p>
+
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="ss-tag">SS1 · Luke Klusman</div>
+        <h4>Perception &amp; Mapping</h4>
+        <ul>
+          <li>RealSense D435i (colour + depth)</li>
+          <li>White-card / BLOCK detection modes</li>
+          <li>CNN: 36-class LetterCNN (A–Z, 0–9)</li>
+          <li>Temporal majority-vote smoothing (15 frames)</li>
+          <li>Dot-based block orientation (±180° disambiguation)</li>
+          <li>TF2 camera→gripper_tcp→world projection</li>
+          <li>Publishes: <code>/perception/detections</code>, <code>/perception/gameboard_state</code></li>
+        </ul>
+      </div>
+
+      <div class="arch-card">
+        <div class="ss-tag">SS2 · Connor</div>
+        <h4>High-Level Control &amp; Pick &amp; Place</h4>
+        <ul>
+          <li>Subscribes to <code>/perception/gameboard_state</code></li>
+          <li>Subscribes to <code>/hl_control/word_request</code></li>
+          <li>Plans UR3e trajectories for each block</li>
+          <li>OnRobot RG2 gripper control</li>
+          <li>Deposits letters at target board positions</li>
+        </ul>
+      </div>
+
+      <div class="arch-card">
+        <div class="ss-tag">SS3 · Elijah</div>
+        <h4>Behaviour Tree &amp; Safety</h4>
+        <ul>
+          <li>Publishes <code>/mission/state</code> (SCANNING / IDLE)</li>
+          <li>Subscribes to <code>/perception/human_detected</code></li>
+          <li>Safety stop on human intrusion</li>
+          <li>Coordinates scan → solve → place game loop</li>
+          <li>Scene-change triggered re-scan logic</li>
+        </ul>
+      </div>
+
+      <div class="arch-card">
+        <div class="ss-tag">SS4 · Kermit</div>
+        <h4>Game Logic &amp; Gamification</h4>
+        <ul>
+          <li>5-letter dictionary with candidate filtering</li>
+          <li>Entropy-based best-guess selection</li>
+          <li>Mode A (AI plays) / Mode B (human plays)</li>
+          <li>Letter-hunt confirmation: picks word first, then verifies all blocks are visible</li>
+          <li>Publishes: <code>/hl_control/word_request</code>, <code>/diagnostics</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ROS 2 topic table -->
+    <h3 style="margin-top:2.5rem">Key ROS 2 topics</h3>
+    <table class="topics-table">
+      <thead>
+        <tr>
+          <th>Topic</th>
+          <th>Type</th>
+          <th>Publisher</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="topic-name">/perception/detections</td>
+          <td>String (JSON)</td>
+          <td>SS1</td>
+          <td>Per-frame letter detections with camera-frame 3D positions</td>
+        </tr>
+        <tr>
+          <td class="topic-name">/perception/gameboard_state</td>
+          <td>GameboardState (latched)</td>
+          <td>SS1</td>
+          <td>World-frame poses for all detected blocks, published once per scan</td>
+        </tr>
+        <tr>
+          <td class="topic-name">/mission/state</td>
+          <td>String</td>
+          <td>SS3</td>
+          <td>SCANNING / IDLE — controls perception scan window</td>
+        </tr>
+        <tr>
+          <td class="topic-name">/hl_control/word_request</td>
+          <td>String (latched)</td>
+          <td>SS4</td>
+          <td>5-letter guess word; triggers pick-and-place planning in SS2</td>
+        </tr>
+        <tr>
+          <td class="topic-name">/perception/human_detected</td>
+          <td>Bool</td>
+          <td>SS1</td>
+          <td>Safety signal to SS3 — robot stops if a human enters the workspace</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ RESULTS ══════════════════════════════════ -->
+<section id="results">
+  <div class="container">
+    <h3>Results</h3>
+    <h2>CNN evaluation &amp; system performance</h2>
+    <p>
+      The LetterCNN was trained on 36 classes (A–Z, 0–9) collected using the custom
+      <code>collect_training_data.py</code> pipeline. The preprocessing chain — grayscale
+      conversion, 64×64 resize, histogram equalisation — is matched exactly between
+      training and inference to avoid distribution shift.
+    </p>
+
+    <div class="figure-row">
+      <!-- Replace figure-placeholder divs with <img> tags once you have the figures -->
+      <div class="figure-wrap">
+        <div class="figure-placeholder">
+          <div class="fig-icon">📊</div>
+          <p>confusion_matrix.png</p>
+          <p style="opacity:.6">Replace with: &lt;img src="static/images/confusion_matrix.png"&gt;</p>
+        </div>
+        <div class="figure-caption">
+          Fig. 1 — Confusion matrix of LetterCNN on held-out test set (36 classes).
+          Note O/Q confusion highlighted in training logs — mitigated by additional O-class training data.
+        </div>
+      </div>
+
+      <div class="figure-wrap">
+        <div class="figure-placeholder">
+          <div class="fig-icon">📈</div>
+          <p>training_loss.png</p>
+          <p style="opacity:.6">Replace with: &lt;img src="static/images/training_loss.png"&gt;</p>
+        </div>
+        <div class="figure-caption">
+          Fig. 2 — Training and validation loss curves for LetterCNN.
+          Dropout (p=0.4) in the classifier head reduces overfitting across 36 classes.
+        </div>
+      </div>
+    </div>
+
+    <div class="figure-wrap" style="margin-top:1rem;">
+      <div class="figure-placeholder">
+        <div class="fig-icon">🤖</div>
+        <p>live_detection_screenshot.png</p>
+        <p style="opacity:.6">Replace with a screenshot of the perception node's annotated output window</p>
+      </div>
+      <div class="figure-caption">
+        Fig. 3 — Live annotated view from the RealSense node. Each detected card shows letter,
+        confidence %, depth in metres, rotation angle, and whether orientation was determined
+        via the corner dot [dot] or bounding-box fallback [rect].
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ DISCUSSION ═══════════════════════════════ -->
+<section id="discussion">
+  <div class="container">
+    <h3>Discussion</h3>
+    <h2>Reflection &amp; future work</h2>
+
+    <p>
+      The perception pipeline achieved reliable letter recognition under varied lighting by
+      combining a depth-gated contour detector with temporal majority-vote smoothing over 15 frames.
+      The dot-based orientation estimator disambiguated the 180° symmetry that
+      <code>cv2.minAreaRect</code> alone cannot resolve, which proved critical for letters like
+      N, Z, and d/q that are orientation-sensitive.
+    </p>
+    <p>
+      Hand-eye calibration remains the single most important step before demo day — manually
+      estimated mount offsets compound into pick-and-place failures on 5 cm blocks. The
+      Wednesday calibration session using ArUco ID 365 and the <code>handeye_realsense</code>
+      package will replace the six guessed CAM_MOUNT_* values with ground-truth measurements.
+    </p>
+
+    <div class="callout">
+      ⚠ <strong>Calibration reminder:</strong> Print the ArUco marker (ID 365, 150 mm physical size)
+      before the Wednesday lab session. Both <code>realsense_info.yaml</code> and
+      <code>realsense_camera_cnn.py</code> (lines 110–113) must be updated with real intrinsics
+      from the same camera at 640×480.
+    </div>
+
+    <p>
+      Future work includes: extending the CNN to handle partially-occluded letters using
+      attention mechanisms; implementing a hard-coded "ARISE" opening guess known to maximise
+      information gain; and adding multi-block duplicate handling so the robot can place two
+      copies of the same letter (e.g., APPLE requires two P blocks).
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ INSTALL ══════════════════════════════════ -->
+<section id="install">
+  <div class="container">
+    <h3>Reproducibility</h3>
+    <h2>Install &amp; run</h2>
+    <p>Tested on Ubuntu 22.04, ROS 2 Humble, Python 3.10.</p>
+
+    <pre><code># Clone and build
+git clone https://github.com/YOUR_ORG/YOUR_REPO.git ~/wordlebot_ws/src/wordlebot
+cd ~/wordlebot_ws
+colcon build --packages-select hl_control wordlebot_perception
+
+# Install Python dependencies
+pip install torch torchvision opencv-python pyrealsense2 mediapipe
+
+# Launch RealSense driver (Terminal 1)
+ros2 launch realsense2_camera rs_launch.py enable_depth:=true align_depth.enable:=true
+
+# Launch perception node (Terminal 2)
+python3 realsense_camera_cnn.py
+
+# Controls: SPACEBAR = toggle scanning · Q = quit</code></pre>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FOOTER ═══════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>
+      WordleBot RS2 · 41118 AI in Robotics · University of Technology Sydney · 2025
+    </p>
+    <p style="margin-top:.5rem;">
+      Website template adapted from
+      <a href="https://github.com/nerfies/nerfies.github.io" target="_blank" rel="noopener">Nerfies</a>
+      (CC BY-SA 4.0).
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
