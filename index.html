@@ -142,7 +142,7 @@
     <p class="authors fi d2">
       <a href="#">Luke Klusman</a><sup>1</sup>&ensp;&middot;&ensp;
       <a href="#">Connor Lindsell</a><sup>1</sup>&ensp;&middot;&ensp;
-      <a href="#">Elijah Spannerberg</a><sup>1</sup>&ensp;&middot;&ensp;
+      <a href="#">Elijah Spannenberg</a><sup>1</sup>&ensp;&middot;&ensp;
       <a href="#">James Farrell</a><sup>1</sup>
     </p>
     <p class="affil fi d2"><sup>1</sup>University of Technology Sydney &middot; FEIT / MME</p>
@@ -194,7 +194,7 @@
     <h3>Abstract</h3>
     <h2>WordleBot &mdash; autonomous robotic Wordle</h2>
     <p>WordleBotis a fully autonomous robotic system that plays the word game Wordle. An Intel RealSense D435i depth camera scans a workspace of lettered blocks. A custom convolutional neural network classifies each letter in real time, and TF2 transforms project block positions from camera frame into the robot world frame. A word-solver selects an optimal 5-letter guess, and a reinforcement-learning trained UR3e arm executes pick-and-place to physically spell the word on the board &mdash; all without human intervention.</p>
-    <p>The project spans two tightly integrated tracks: a <strong>Perception &amp; CNN track</strong> (Luke Klusman &amp; Elijah Spannerberg) responsible for visual letter detection, 3D localisation, GUI feedback, and game logic; and an <strong>RL &amp; Path Planning track</strong> (Connor Lindsell &amp; James Farrell) responsible for training a PPO policy in simulation and deploying it on the physical robot for block manipulation.</p>
+    <p>The project spans two tightly integrated tracks: a <strong>Perception &amp; CNN track</strong> (Luke Klusman &amp; Elijah Spannenberg) responsible for visual letter detection, 3D localisation, GUI feedback, and game logic; and an <strong>RL &amp; Path Planning track</strong> (Connor Lindsell &amp; James Farrell) responsible for training a PPO policy in simulation and deploying it on the physical robot for block manipulation.</p>
   </div>
 </section>
 
@@ -213,10 +213,10 @@
         <div class="team-desc">RealSense D435i integration, LetterCNN design &amp; training, depth-to-world-frame projection, dot-based block orientation, hand-eye calibration.</div>
       </div>
       <div class="team-card cc">
-        <!-- Replace with: <img class="team-photo" src="static/images/elijah.jpg" alt="Elijah Spannerberg" /> -->
+        <!-- Replace with: <img class="team-photo" src="static/images/elijah.jpg" alt="Elijah Spannenberg" /> -->
         <div class="team-av">ES</div>
         <div class="team-role">Behaviour Tree &amp; GUI</div>
-        <div class="team-name">Elijah Spannerberg</div>
+        <div class="team-name">Elijah Spannenberg</div>
         <div class="tags"><span class="tag">SS3</span><span class="tag">ROS2 BT</span><span class="tag">GUI</span><span class="tag">Safety</span></div>
         <div class="team-desc">ROS 2 behaviour tree, mission state management, human-detection safety monitor, diagnostics GUI, scan trigger and game loop orchestration.</div>
       </div>
@@ -444,18 +444,38 @@
     <h2>Install &amp; run</h2>
     <p>Tested on Ubuntu 22.04, ROS 2 Humble, Python 3.10.</p>
     <pre><code># Clone and build
-git clone https://github.com/LukeFKlusman/WordleBot.git
-cd wordlebot_ws && colcon build
+git clone https://github.com/LukeFKlusman/WordleBot.git ~/ros2_ws/src/WordleBot
+cd ~/ros2_ws
+
+# Build custom messages first (required by perception and GUI)
+colcon build --packages-select hl_control
+source install/setup.bash
+
+# Build remaining packages
+colcon build --packages-select wordlebot_control interaction_execution
+source install/setup.bash
 
 # Install Python dependencies
 pip install torch torchvision opencv-python pyrealsense2 stable-baselines3
+pip install SpeechRecognition sounddevice scipy librosa soundfile
 
-# Terminal 1 - RealSense driver
-ros2 launch realsense2_camera rs_launch.py enable_depth:=true align_depth.enable:=true
+# Set ROS domain ID in every terminal
+export ROS_DOMAIN_ID=10</code></pre>
 
-# Terminal 2 - Perception node
-python3 realsense_camera_cnn.py
-# SPACEBAR = toggle scanning   Q = quit</code></pre>
+    <p></p>
+    <h3>Quick start</h3>
+    <pre><code># Terminal 1 - Perception (includes gamification)
+ros2 launch perception/launch/ss1_perception.launch.py
+
+# Terminal 2 - GUI + Mission Coordinator (SS3)
+ros2 launch interaction_execution gui.launch.py
+
+# Terminal 3 - Motion Planning (SS2) if available
+ros2 launch ur_onrobot_control start_robot.launch.py \
+  ur_type:=ur3e robot_ip:=192.168.0.191 launch_rviz:=false
+
+# Terminal 4 (optional) - Voice control
+python3 voice_control/main.py</code></pre>
   </div>
 </section>
 
