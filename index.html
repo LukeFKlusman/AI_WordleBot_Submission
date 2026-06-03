@@ -123,6 +123,8 @@
     .luke-card { padding-bottom: 1.25rem; }
     .luke-photo-wrap { width: 100%; height: 160px; overflow: hidden; border-radius: .4rem; margin-bottom: 0; }
     .luke-photo { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; display: block; }
+    .team-photo-wrap { width: 100%; height: 160px; overflow: hidden; border-radius: .4rem; margin-bottom: 0.75rem; }
+    .team-photo-large { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
     @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
     .fi{animation:fadeUp .55s ease both}
     .d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
@@ -213,8 +215,9 @@
         <div class="team-desc">RealSense D435i integration, LetterCNN design &amp; training, depth-to-world-frame projection, dot-based block orientation, hand-eye calibration.</div>
       </div>
       <div class="team-card cc">
-        <!-- Replace with: <img class="team-photo" src="static/images/elijah.jpg" alt="Elijah Spannenberg" /> -->
-        <div class="team-av">ES</div>
+        <div class="team-photo-wrap">
+          <img class="team-photo-large" src="static/images/elijah.png" alt="Elijah Spannenberg" />
+        </div>
         <div class="team-role">Behaviour Tree &amp; GUI</div>
         <div class="team-name">Elijah Spannenberg</div>
         <div class="tags"><span class="tag">SS3</span><span class="tag">ROS2 BT</span><span class="tag">GUI</span><span class="tag">Safety</span></div>
@@ -390,14 +393,12 @@
     </p>
     <div class="fig-row">
       <div class="fig-wrap">
-        <!-- <img src="static/images/gui_main.png" alt="GUI main window" /> -->
-        <div class="fig-ph"><div class="fig-ico">&#128187;</div><p>gui_main.png</p><p style="opacity:.6">Replace with a screenshot of the GUI main window</p></div>
+        <img src="static/images/gui_main.png" alt="GUI main window" />
         <div class="fig-cap">Fig. 5 &mdash; SS3 Qt5 operator GUI showing RViz sim view, Wordle board, voice controls, and safety panel.</div>
       </div>
       <div class="fig-wrap">
-        <!-- <img src="static/images/gui_wordle.png" alt="GUI Wordle board" /> -->
-        <div class="fig-ph"><div class="fig-ico">&#129354;</div><p>gui_wordle.png</p><p style="opacity:.6">Replace with a screenshot of the embedded Wordle board</p></div>
-        <div class="fig-cap">Fig. 6 &mdash; Embedded Wordle board (HTML/JS via QWebEngineView) showing Mode A game in progress with G/B/I feedback tiles.</div>
+        <img src="static/images/gui_wordle.png" alt="GUI Wordle board" />
+        <div class="fig-cap">Fig. 6 &mdash; Embedded Wordle board (HTML/JS via QWebEngineView) showing Mode B game in progress with G/B/I feedback tiles.</div>
       </div>
     </div>
   </div>
