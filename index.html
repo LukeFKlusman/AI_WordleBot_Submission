@@ -407,24 +407,54 @@
   <div class="container">
     <div class="tl r">&#129470; RL &amp; Path Planning Track</div>
     <h2>RL &amp; Path Planning Results</h2>
-    <p>A PPO (Proximal Policy Optimisation) agent was trained in simulation to control the UR3e arm for pick-and-place tasks. The policy was evaluated on reward convergence, task success rate, and transfer performance on the physical robot.</p>
+    <p>A MaskablePPO agent was trained through curriculum learning across three stages of increasing difficulty (C1–C3), teaching the policy to pick and place lettered blocks to spell a target Wordle word. The agent was evaluated over 20 episodes against a greedy nearest-neighbour baseline on Stage C3 — the hardest stage reached — where all five Wordle slots are pre-occupied and must be cleared before correct letters can be placed.</p>
+
+    <!-- Key stats -->
+    <div class="stat-row">
+      <div class="stat-card r">
+        <div class="stat-num">48.5 m</div>
+        <div class="stat-label">RL avg travel distance</div>
+        <div class="stat-delta">&#8595; 2.6 m less than greedy</div>
+      </div>
+      <div class="stat-card r">
+        <div class="stat-num">51.1 m</div>
+        <div class="stat-label">Greedy avg travel distance</div>
+        <div class="stat-delta">Nearest-neighbour baseline</div>
+      </div>
+      <div class="stat-card r">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Task success rate (C3)</div>
+        <div class="stat-delta">20 / 20 episodes completed</div>
+      </div>
+    </div>
+
+    <!-- TensorBoard — full width -->
+    <h3 style="margin-top:2rem">Training convergence</h3>
+    <div class="fig-wrap-wide">
+      <img src="static/images/tensor_board.png" alt="TensorBoard training curves — episode reward mean and path length mean" />
+      <div class="fig-cap">Fig. 7 &mdash; TensorBoard training curves over ~1.9 million environment steps. Episode reward (bottom) converges from ~125 to ~182; mean path length (top) stabilises around 48 m, indicating the policy has learned an efficient pick-and-place sequence.</div>
+    </div>
+
+    <!-- Side-by-side travel charts -->
+    <h3 style="margin-top:2rem">RL vs greedy baseline</h3>
     <div class="fig-row">
       <div class="fig-wrap">
-        <!-- <img src="static/images/reward_curve.png" alt="Reward convergence" /> -->
-        <div class="fig-ph"><div class="fig-ico">&#128200;</div><p>reward_curve.png</p><p style="opacity:.6">Replace with your PPO reward convergence plot</p></div>
-        <div class="fig-cap">Fig. 7 &mdash; PPO training reward convergence over episodes.</div>
+        <img src="static/images/distance_bar_graph.png" alt="Total travel distance per episode — RL vs Greedy" />
+        <div class="fig-cap">Fig. 8 &mdash; Total travel distance across 20 C3 episodes. The RL agent averages 48.5 m against the greedy baseline's 51.1 m, with the RL policy showing lower variance on harder board configurations.</div>
       </div>
       <div class="fig-wrap">
-        <!-- <img src="static/images/trajectory.png" alt="Trajectory visualisation" /> -->
-        <div class="fig-ph"><div class="fig-ico">&#128208;</div><p>trajectory.png</p><p style="opacity:.6">Replace with a trajectory visualisation or sim screenshot</p></div>
-        <div class="fig-cap">Fig. 8 &mdash; Example planned pick-and-place trajectory in simulation.</div>
+        <img src="static/images/Cumulative_distance.png" alt="Cumulative distance travelled per step — RL vs Greedy" />
+        <div class="fig-cap">Fig. 9 &mdash; Cumulative distance travelled step-by-step for the best episode. The RL agent's line finishing lower confirms it found a more efficient global sequence, not just better individual moves.</div>
       </div>
     </div>
+
+    <!-- GIF animation -->
+    <h3 style="margin-top:2rem">Side-by-side episode animation</h3>
     <div class="fig-wrap">
-      <!-- <img src="static/images/robot_execution.png" alt="Robot execution" /> -->
-      <div class="fig-ph"><div class="fig-ico">&#129470;</div><p>robot_execution.png</p><p style="opacity:.6">Replace with a photo of the UR3e executing pick-and-place</p></div>
-      <div class="fig-cap">Fig. 9 &mdash; UR3e executing a trained pick-and-place policy on the physical robot.</div>
+      <img src="static/images/c3_clear_and_place_ep4_animation.gif" alt="Side-by-side animation of RL agent vs greedy baseline solving C3" />
+      <div class="fig-cap">Fig. 10 &mdash; Animated comparison of the RL agent (left) and greedy baseline (right) on the same C3 board. The RL agent plans a globally shorter path; the greedy baseline makes locally optimal moves that accumulate into a longer overall trajectory.</div>
     </div>
+
   </div>
 </section>
 
